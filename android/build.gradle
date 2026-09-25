@@ -1,0 +1,55 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = '../build'
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(':app')
+}
+
+subprojects {
+    def configureNamespace = { proj ->
+        if (proj.android.namespace == null) {
+            def manifestFile = proj.file("src/main/AndroidManifest.xml")
+            if (manifestFile.exists()) {
+                def manifestContent = manifestFile.getText("UTF-8")
+                def matcher = manifestContent =~ /package="([^"]+)"/
+                if (matcher.find()) {
+                    proj.android.namespace = matcher.group(1)
+                }
+            }
+        }
+    }
+
+    project.plugins.withId("com.android.application") {
+        configureNamespace(project)
+    }
+    project.plugins.withId("com.android.library") {
+        configureNamespace(project)
+    }
+    
+    tasks.configureEach { task ->
+        if (task.class.name.contains("KotlinCompile") || task.hasProperty("kotlinOptions")) {
+            if (project.hasProperty("android") && project.android.hasProperty("compileOptions")) {
+                def javaTarget = project.android.compileOptions.targetCompatibility
+                if (javaTarget != null) {
+                    try {
+                        task.kotlinOptions.jvmTarget = javaTarget.toString()
+                    } catch (Exception e) {
+                        // Ignore
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

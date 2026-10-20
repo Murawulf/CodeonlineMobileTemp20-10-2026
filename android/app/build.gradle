@@ -4,8 +4,6 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-ext.kotlin_version = '1.9.24'
-
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -14,82 +12,73 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-def flutterRoot = localProperties.getProperty('flutter.sdk')
-if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
-}
-
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '4'
+    flutterVersionCode = '1'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '1.0.2'
+    flutterVersionName = '1.0.0'
 }
+
+// Release signing (android/key.properties)
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
 }
+
 android {
+    // Code package only (MainActivity). Not shown on Play Store.
     namespace "com.prod.codeonline_info"
-    compileSdkVersion 36
+    compileSdk 36
     ndkVersion flutter.ndkVersion
 
     compileOptions {
         coreLibraryDesugaringEnabled true
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
+
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
-    signingConfigs {
-        release {
-            keyAlias = keystoreProperties['keyAlias']
-            keyPassword = keystoreProperties['keyPassword']
-            storeFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
-            storePassword = keystoreProperties['storePassword']
-        }
-    }
+
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
+
     defaultConfig {
-        applicationId "com.prod.codeonline_info"
-        minSdkVersion 24
-        targetSdkVersion 36
+        // NEW unique ID for the new Play Store app (can never change after upload)
+        applicationId "com.netconsulting.codeonlineinfo"
+        minSdk 24
+        targetSdk 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+        // Name shown under the icon on the phone
+        resValue "string", "app_name", "Codeonline Info"
     }
 
-    flavorDimensions "country"
-    productFlavors {
-        cotedivoire {
-            dimension "country"
-            applicationId "com.prod.codeonline_info"
-            resValue "string", "app_name", "Codeonline Côte d\\'Ivoire"
-        }
-        tunisie {
-            dimension "country"
-            applicationId "com.prod.codeonline_tunisie"
-            resValue "string", "app_name", "Codeonline Tunisie"
-        }
-        senegal {
-            dimension "country"
-            applicationId "com.prod.codeonline_senegal"
-            resValue "string", "app_name", "Codeonline Sénégal"
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+                storePassword keystoreProperties['storePassword']
+            }
         }
     }
 
     buildTypes {
         release {
-            // Démo : signature avec la clé debug (sideload OK). Pour publication :
-            // créer android/key.properties + keystore, puis remettre signingConfigs.release.
-            signingConfig = signingConfigs.debug
+            // Uses your real key when key.properties exists, debug key otherwise
+            // (debug-signed builds install on phones but Play Console rejects them)
+            signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
         }
     }
 }
@@ -99,6 +88,5 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import "package:codeonline_info/core/config/app_config.dart";
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:codeonline_info/core/commun/country_selector.dart';
 import 'package:codeonline_info/core/commun/search_bar.dart';
 import 'package:codeonline_info/core/config/assets/app_images.dart';
 import 'package:codeonline_info/core/config/theme/app_colors.dart';
@@ -85,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    AppConfig.countryNotifier.addListener(_onCountryChanged);
     _getLanguagePreference();
     _pageController = PageController();
     _startAutoScroll();
@@ -101,8 +103,28 @@ class _HomeScreenState extends State<HomeScreen> {
     fetchContent(); // Fetch content when language preference is retrieved
   }
 
+  // The user picked another country from the flag drop-down: drop the old
+  // country's data right away and reload everything from the new country's
+  // API, live (no restart needed).
+  void _onCountryChanged() {
+    if (!mounted) return;
+    setState(() {
+      menuItems = [];
+      sponsorImages = [];
+      showcaseEntities = [];
+      _showcasePageIndex = 0;
+    });
+    if (_pageController.hasClients) _pageController.jumpToPage(0);
+    if (_showcasePageController.hasClients) {
+      _showcasePageController.jumpToPage(0);
+    }
+    fetchContent();
+    fetchHighlightedShowcase();
+  }
+
   @override
   void dispose() {
+    AppConfig.countryNotifier.removeListener(_onCountryChanged);
     _timer?.cancel(); // Cancel the timer when the widget is disposed
     _pageController.dispose();
     _showcasePageController.dispose();
@@ -165,10 +187,14 @@ class _HomeScreenState extends State<HomeScreen> {
       hasError = false; // Reset error state
     });
 
+    final requestedCountry = AppConfig.country;
     try {
       final response = await http.get(
         Uri.parse('${AppConfig.apiBase}//api_fp/V1_fp/sponsors'),
       );
+      // Country changed (or screen closed) while loading: ignore this
+      // stale answer, the reload for the new country is already running.
+      if (!mounted || requestedCountry != AppConfig.country) return;
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -217,6 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (e) {
+      if (!mounted || requestedCountry != AppConfig.country) return;
       setState(() {
         isLoading = false; // Stop loading
         hasError = true; // Set error flag
@@ -241,11 +268,13 @@ class _HomeScreenState extends State<HomeScreen> {
       isShowcaseLoading = true;
     });
 
+    final requestedCountry = AppConfig.country;
     try {
       final uri = Uri.parse(
         '${AppConfig.apiBase}//api_fp/V1_fp/highlighted_products?limit_per_entity=$kShowcaseProductsPerEntity',
       );
       final response = await http.get(uri);
+      if (!mounted || requestedCountry != AppConfig.country) return;
       print('Highlighted showcase: status ${response.statusCode}');
 
       if (response.statusCode != 200) {
@@ -272,6 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // way, fail quiet - the section just stays hidden instead of showing
       // broken content.
       print('Failed to fetch highlighted showcase: $e');
+      if (!mounted || requestedCountry != AppConfig.country) return;
       setState(() {
         showcaseEntities = [];
         isShowcaseLoading = false;
@@ -729,20 +759,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.border, width: 1),
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    AppConfig.flagAsset,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
+              child: const CountrySelector(),
             ),
             Expanded(
               child: Center(

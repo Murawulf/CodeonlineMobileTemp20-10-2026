@@ -1,5 +1,5 @@
 import 'package:codeonline_info/core/config/assets/app_images.dart';
-import "package:codeonline_info/core/config/app_config.dart";
+import 'package:codeonline_info/core/commun/country_selector.dart';
 import 'package:codeonline_info/core/config/theme/app_colors.dart';
 import 'package:codeonline_info/presentation/home/pages/home.dart';
 import 'package:flutter/material.dart';
@@ -44,20 +44,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16.0),
-          child: Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.border, width: 1),
-            ),
-            child: ClipOval(
-              child: Image.asset(
-                AppConfig.flagAsset,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+          child: const CountrySelector(),
         ),
       ],
     );

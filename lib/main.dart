@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'core/config/app_config.dart';
 import 'core/config/theme/app_theme.dart';
+import 'presentation/country/pages/country_selection_page.dart';
 import 'presentation/splash/pages/SplashPage.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Recharge le pays choisi par l'utilisateur (s'il y en a un).
+  await AppConfig.load();
 
   runApp(const MyApp());
 }
@@ -27,7 +32,11 @@ class MyApp extends StatelessWidget {
       // today - untouched on purpose.
       theme: AppTheme.lightTheme,
       themeMode: ThemeMode.light,
-      home: SplashPage(),
+      // Premier lancement après installation -> choix du pays ; ensuite
+      // directement le splash avec le pays mémorisé.
+      home: AppConfig.hasSavedCountry
+          ? SplashPage()
+          : const CountrySelectionPage(),
     );
   }
 }

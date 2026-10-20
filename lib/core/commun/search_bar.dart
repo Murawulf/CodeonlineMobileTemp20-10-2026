@@ -1,4 +1,5 @@
 // custom_search.dart
+import 'package:codeonline_info/core/config/app_config.dart';
 import 'package:codeonline_info/core/config/assets/app_images.dart';
 import 'package:codeonline_info/core/config/theme/app_colors.dart';
 import 'package:codeonline_info/presentation/home/pages/home.dart';
@@ -41,11 +42,25 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
   void initState() {
     super.initState();
     _controller.text = widget.initialText?.trim() ?? '';
+    // Vide la barre quand l'utilisateur change de pays.
+    AppConfig.countryNotifier.addListener(_resetSearch);
+  }
+
+  // Remet la barre de recherche à zéro (texte vide + icône X masquée).
+  void _resetSearch() {
+    if (!mounted) return;
+    _controller.clear();
+    setState(() {});
   }
 
   @override
   void didUpdateWidget(CustomSearchBar oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Changement de langue -> on vide aussi la barre.
+    if (widget.selectedLanguage != oldWidget.selectedLanguage) {
+      _controller.clear();
+      setState(() {});
+    }
     if (widget.initialText != oldWidget.initialText &&
         widget.initialText != null) {
       _controller.text = widget.initialText!.trim();
@@ -55,6 +70,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
 
   @override
   void dispose() {
+    AppConfig.countryNotifier.removeListener(_resetSearch);
     _controller.dispose();
     super.dispose();
   }

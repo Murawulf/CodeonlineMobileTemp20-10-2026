@@ -316,7 +316,7 @@ class _SearchPageState extends State<SearchPage> {
   Widget _buildBrandCard(_BrandGroup group) {
     final title = group.brand.isNotEmpty
         ? group.brand
-        : (_fr ? 'Autres fiches caractéristique' : 'Other characteristic sheets');
+        : (_fr ? 'Autres fiches caractéristiques' : 'Other characteristic sheets');
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -341,7 +341,7 @@ class _SearchPageState extends State<SearchPage> {
               Padding(
                 padding: const EdgeInsets.only(top: 2, bottom: 4),
                 child: Text(
-                  _fr ? 'Fiches caractéristique' : 'Characteristic sheets',
+                  _fr ? 'Fiches caractéristiques' : 'Characteristic sheets',
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,

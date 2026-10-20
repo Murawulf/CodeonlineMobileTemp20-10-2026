@@ -49,8 +49,7 @@ dependencies:
   cached_network_image:
   flutter_html:
   html:
-  camera:
-  qr_code_scanner:
+ 
   flutter_local_notifications:
   rxdart:
   flutter_pdfview:

@@ -41,7 +41,8 @@ class _HelpScreenState extends State<HelpScreen> {
   // ---------------------------------------------------------------------
   // The FAQ content itself - every entry is {questionEn, answerEn,
   // questionFr, answerFr}. Covers what's actually in this app: search by
-  // brand/GTIN, the barcode scanner, brand search results, the entity
+  // brand/GTIN, the barcode scanner, brand search results, fiches
+  // caractéristiques, the entity
   // "Voir tous les produits" tile, the Product/Producer tabs, the
   // tap-to-zoom product image, flash notifications, regulated/tariffed
   // pricing, the language switch, and this screen's own privacy note.
@@ -94,6 +95,14 @@ class _HelpScreenState extends State<HelpScreen> {
       'qFr': 'Que contient l\'onglet "Producteur" ?',
       'aFr':
           'Le nom de l\'entreprise fabricante, son GLN, son adresse, son numéro de téléphone, son e-mail et son site web, lorsqu\'ils sont fournis.',
+    },
+    {
+      'qEn': 'What is a "fiche caractéristique" (characteristic sheet)?',
+      'aEn':
+          'It\'s a sheet describing a product or service that doesn\'t have a regular product sheet. When you search by brand or name, matching sheets appear in the "Characteristic sheets" section of the results; you can also type a sheet\'s identification code in the search bar to open it directly. Each sheet has a "Characteristic sheet" tab (photos, videos and details) and a "Producer" tab.',
+      'qFr': 'Qu\'est-ce qu\'une fiche caractéristique ?',
+      'aFr':
+          'C\'est une fiche qui décrit un produit ou un service ne disposant pas de fiche produit classique. Quand vous recherchez par marque ou par nom, les fiches correspondantes apparaissent dans la section "Fiches caractéristiques" des résultats ; vous pouvez aussi taper le code identifiant d\'une fiche dans la barre de recherche pour l\'ouvrir directement. Chaque fiche comporte un onglet "Fiche caractéristique" (photos, vidéos et détails) et un onglet "Producteur".',
     },
     {
       'qEn': 'Can I see a bigger version of a product\'s photo?',
